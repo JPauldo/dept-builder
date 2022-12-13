@@ -1,0 +1,26 @@
+{
+  "name": "dept-builder",
+  "version": "1.0.0",
+  "description": "Department Builder is a great tool for HR managers to be able to easily add employees, their roles and even whole new departments.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JPauldo/dept-builder.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/JPauldo/dept-builder/issues"
+  },
+  "homepage": "https://github.com/JPauldo/dept-builder#readme",
+  "dependencies": {
+    "console.table": "^0.10.0",
+    "dotenv": "^16.0.3",
+    "inquirer": "^8.2.5",
+    "mysql2": "^2.3.3"
+  }
+}
