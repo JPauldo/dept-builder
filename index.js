@@ -59,6 +59,53 @@ function getQuestions(questionObj) {
           return results.map((row) => ({ name: row.name, value: row.id }));
         }
       }
+    ],
+    addEmp: [
+      {
+        type: 'input',
+        name: 'firstName',
+        message: 'Please enter their first name.'
+      },
+      {
+        type: 'input',
+        name: 'lastName',
+        message: 'Please enter their first name.'
+      },
+      {
+        type: 'list',
+        name: 'deptId',
+        message: 'In which department?',
+        choices: async function () {
+          const results = await viewAllDepartments(db);
+
+          return results.map((row) => ({ name: row.name, value: row.id }));
+        } 
+      },
+      {
+        type: 'list',
+        name: 'roleId',
+        message: 'What is their role?',
+        choices: async function (answers) {
+          const results = await getRoleByDept(db, answers.deptId);
+
+          return results.map((row) => ({ name: row.role_name, value: row.role_id }));
+        }
+      },
+      {
+        type: 'list',
+        name: 'managerId',
+        message: 'Who is their manager?',
+        choices: async function (answers) {
+          const results = await getManagersByDept(db, answers.deptId);
+
+          return results.map((row) => ({ name: row.manager_name, value: row.managers_id }))
+        },
+        when: async function (answers) {
+          const results = await getManagersByDept(db, answers.deptId);
+
+          return results.length > 0 ? true : false;
+        }
+      }
     ]
   }
   
@@ -72,7 +119,23 @@ function getQuestions(questionObj) {
  * @returns {Array} A list of manager
  */
 async function getManagersByDept(db, deptId) {
-  return;
+  const sql = `SELECT E.id AS managers_id,
+                      CONCAT(E.first_name, " ", E.last_name) AS manager_name
+                 FROM employee E
+                 JOIN role R
+                   ON E.role_id = R.id
+                 JOIN department D
+                   ON R.department_id = D.id
+                WHERE D.id = ?
+                  AND E.manager_id IS NULL`;
+
+  try {
+    const [rows, fields] = await db.execute(sql, [deptId]);
+
+    return rows;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /**
@@ -82,7 +145,18 @@ async function getManagersByDept(db, deptId) {
  * @returns {Array} A list of roles
  */
 async function getRoleByDept(db, deptInfo) {
-  return;
+  const sql = `SELECT id AS role_id, 
+                      title AS role_name
+                 FROM role
+                WHERE department_id = ?`
+
+  try {
+    const [rows, fields] = await db.execute(sql, [deptInfo]);
+    
+    return rows;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /**
@@ -232,6 +306,7 @@ async function addDepartment(db, departmentData) {
 async function addRole(db, roleData) {
   const sql = `INSERT INTO role (title, salary, department_id)
                     VALUES (?, ?, ?)`;
+
   const roleInfo = Object.values(roleData);
 
   try {
@@ -247,6 +322,23 @@ async function addRole(db, roleData) {
  * @param {Object} employeeData The data for the employee
  */
 async function addEmployee(db, employeeData) {
+  const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id)
+                    VALUES (?, ?, ?, ?);`;
+  let firstName, lastName, roleId, managerId;
+  
+  if (employeeData.managerId) {
+    ({ firstName, lastName, roleId, managerId } = employeeData);
+  } else {
+    ({ firstName, lastName, roleId } = employeeData);
+    managerId = null;
+  }
+  const employeeInfo = [firstName, lastName, roleId, managerId];
+
+  try {
+    await db.execute(sql, employeeInfo);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /**
