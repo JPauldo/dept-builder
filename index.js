@@ -105,7 +105,21 @@ async function viewAllDepartments(db) {
  * @returns {Array} A list of all roles
  */
 async function viewAllRoles(db) {
-  return;
+  const sql = `SELECT role.id,
+                      title,
+                      name AS department_name,
+                      CONCAT('$', FORMAT(salary, 2)) AS salary
+                 FROM role
+                 JOIN department
+                   ON role.department_id = department.id`;
+  
+  try {
+    const [rows, fields] = await db.execute(sql);
+    
+    return rows;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 /**
