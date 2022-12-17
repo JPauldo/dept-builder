@@ -62,6 +62,22 @@ async function getRoleByDept(db, deptInfo) {
  * @param {String} routeString The route of the query
  */
 async function displayViewResults(db, routeString) {
+  const route = routeString.substring(9);
+  let results;
+
+  switch (route) {
+    case 'Departments':
+      results = await viewAllDepartments(db);
+      break;
+    case 'Roles':
+      results = await viewAllRoles(db);
+      break;
+    case 'Employees':
+      results = await viewAllEmployees(db);
+  }
+  
+  console.clear();
+  console.table(results);
 }
 
 /**
@@ -70,7 +86,17 @@ async function displayViewResults(db, routeString) {
  * @returns {Array} A list of all departments
  */
 async function viewAllDepartments(db) {
-  return;
+  const sql = `SELECT id,
+                      name
+                 FROM department`;
+
+  try {
+    const [rows, fields] = await db.execute(sql);
+    
+    return rows;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 /**
