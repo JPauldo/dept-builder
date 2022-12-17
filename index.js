@@ -128,7 +128,28 @@ async function viewAllRoles(db) {
  * @returns {Array} A list of all employees
  */
 async function viewAllEmployees(db) {
-  return;
+  const sql = `SELECT E.id AS employee_id,
+                      CONCAT(E.first_name, " ", E.last_name) AS employee_name,
+                      title AS role,
+                      CONCAT('$', FORMAT(salary, 2)) AS income,
+                      name AS department,
+                      IF(E.manager_id IS NOT NULL, CONCAT(M.first_name, " ", M.last_name), NULL) AS manager_name
+                 FROM employee E
+                 JOIN role R
+                   ON E.role_id = R.id
+                 JOIN department D
+                   ON R.department_id = D.id
+                 LEFT JOIN employee M
+                   ON E.manager_id = M.id
+                ORDER BY D.id, income DESC, employee_id`;
+
+  try {
+    const [rows, fields] = await db.execute(sql);
+    
+    return rows;
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 /**
