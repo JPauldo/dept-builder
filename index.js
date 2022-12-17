@@ -30,6 +30,13 @@ function getQuestions(questionObj) {
           'Exit'
         ]
       }
+    ],
+    addDept: [
+      {
+        type: 'input',
+        name: 'dept',
+        message: 'Please enter the name.'
+      }
     ]
   }
   
@@ -159,6 +166,23 @@ async function viewAllEmployees(db) {
  * @param {Object} addData The data for the INSERT
  */
 async function displayAddResults(db, route, addData) {
+  let results;
+
+  if (route.endsWith('Dept')) {
+    await addDepartment(db, addData);
+    results = await viewAllDepartments(db);
+  } 
+  else if (route.endsWith('Role')) {
+    await addRole(db, addData);
+    results = await viewAllRoles(db);
+  } 
+  else {
+    await addEmployee(db, addData);
+    results = await viewAllEmployees(db);
+  }
+  
+  console.clear();
+  console.table(results);
 }
 
 /**
@@ -167,6 +191,15 @@ async function displayAddResults(db, route, addData) {
  * @param {Object} departmentData The data of the department
  */
 async function addDepartment(db, departmentData) {
+  const sql = `INSERT INTO department (name)
+                    VALUES (?)`;
+  const deptInfo = Object.values(departmentData);
+
+  try {
+    await db.execute(sql, deptInfo);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /**
@@ -252,6 +285,13 @@ async function init() {
 
     if (response.startsWith('View')) {      
       await displayViewResults(db, response);
+    } else if (response.startsWith('add')) {
+      menu.key = response;
+      response = await promptQuestions(menu);
+      
+      await displayAddResults(db, menu.key, response);
+
+      menu.key = 'main';
     } else {
       console.log('Exiting...');
       menu.key = response;
