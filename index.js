@@ -10,7 +10,30 @@ const { exit } = require('process');
  * @returns {Array} List of questions
  */
 function getQuestions(questionObj) {
-  return;
+  const db = questionObj.db;
+  const key = questionObj.key
+
+  const questions = {
+    main: [
+      {
+        type: 'list',
+        name: 'main',
+        message: 'What would you like do?',
+        choices: [
+          'View All Departments', 
+          'View All Roles', 
+          'View All Employees', 
+          { name: 'Add a Department', value: 'addDept' }, 
+          { name: 'Add a Role', value: 'addRole' }, 
+          { name: 'Add an Employee', value: 'addEmp' }, 
+          { name: 'Update an Employee Role', value: 'updEmpRole' }, 
+          'Exit'
+        ]
+      }
+    ]
+  }
+  
+  return questions[key];
 }
 
 /**
@@ -124,7 +147,17 @@ async function updateEmployeeRole(db, empRoleData) {
  * @returns {String/Object} The answer/set of answers 
  */
 async function promptQuestions(questionObj) {
-  return;
+  const questions = getQuestions(questionObj);
+
+  let answer = await inquirer.prompt(questions);
+  
+  // Sets the answer to the question key if the main menu
+  if(answer.main) {
+    const { main } = answer;
+    answer = main;
+  }
+
+  return answer;
 }
 
 /**
@@ -133,7 +166,12 @@ async function promptQuestions(questionObj) {
  * @returns {Object} A question object containing a key and a database instance 
  */
 function createQuestionObject(db) {
-  return;
+  const questionObj = {};
+  
+  questionObj.key = 'main';
+  questionObj.db = db;
+
+  return questionObj;
 }
 
 /**
@@ -145,6 +183,20 @@ async function init() {
                                            user: 'root',
                                            password: 'MySeekerQwil904',
                                            database: 'pokemon_league'});
+  
+  let menu = createQuestionObject(db);
+
+  while(menu.key !== 'Exit') {
+    let response = await promptQuestions(menu);
+
+    if (response.startsWith('View')) {      
+      await displayViewResults(db, response);
+    } else {
+      console.log('Exiting...');
+      menu.key = response;
+    }
+
+  }
 
   // Exits the application
   exit();
