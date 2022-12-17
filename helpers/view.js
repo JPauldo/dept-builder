@@ -30,7 +30,7 @@ async function getManagersByDept(db, deptId) {
  * @param {Integer} deptId An id of the managers' department
  * @returns {Array} A list of roles
  */
-async function getRoleByDept(db, deptInfo) {
+async function getRolesByDept(db, deptInfo) {
   const sql = `SELECT id AS role_id, 
                       title AS role_name
                  FROM role
@@ -70,13 +70,14 @@ async function viewAllDepartments(db) {
  * @returns {Array} A list of all roles
  */
 async function viewAllRoles(db) {
-  const sql = `SELECT role.id,
+  const sql = `SELECT R.id,
                       title,
                       name AS department_name,
                       CONCAT('$', FORMAT(salary, 2)) AS salary
-                 FROM role
-                 JOIN department
-                   ON role.department_id = department.id`;
+                 FROM role R
+                 JOIN department D
+                   ON R.department_id = D.id
+                ORDER BY D.id, salary DESC`;
   
   try {
     const [rows, fields] = await db.execute(sql);
@@ -120,41 +121,34 @@ async function viewAllEmployees(db) {
 /**
  * Displays the view results based on the routing data provided.
  * @param {PromiseConnection} db An instance of the database
- * @param {String} routeString The route of the query
+ * @param {String} route The route of the query
+ * @param {Integer} filter A id to filter against
  */
-async function displayViewResults(db, routeString, filter=0) {
-  let route;
-  
-  if(routeString.split(' ').length > 1){
-    // 
-    route = routeString.substring(9);
-  } else {
-    route = routeString;
-  }
-
+async function getViewResults(db, route, filter=0) {
   let results;
 
   switch (route) {
     case 'Departments':
+    case 'viewDept':
       results = await viewAllDepartments(db);
       break;
     case 'Roles':
+    case 'viewRole':
       results = await viewAllRoles(db);
       break;
     case 'Employees':
+    case 'viewEmp':
       results = await viewAllEmployees(db);
       break;
     case 'ManagersByDept':
-      results = await getManagersByDept(db, filter);break;
-    case 'RoleByDept':
-      results = await getRoleByDept(db, filter);
+      results = await getManagersByDept(db, filter);
+      break;
+    case 'RolesByDept':
+      results = await getRolesByDept(db, filter);
       break;
   }
-  
-  console.clear();
-  console.table(results);
 
   return results;
 }
 
-module.exports = displayViewResults;
+module.exports = getViewResults;
