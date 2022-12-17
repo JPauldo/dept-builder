@@ -63,10 +63,9 @@ async function addEmployee(db, employeeData) {
 /**
  * Displays the insert results based on the routing data provided.
  * @param {PromiseConnection} db An instance of the database
- * @param {String} route The route of the query
  * @param {Object} addData The data for the INSERT
  */
-async function displayAddResults(db, addData) {
+async function getAddResults(db, addData) {
   let results;
 
   if (Object.hasOwn(addData, 'deptName')) {
@@ -85,4 +84,4 @@ async function displayAddResults(db, addData) {
   return results
 }
 
-module.exports = displayAddResults;
+module.exports = getAddResults;

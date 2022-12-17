@@ -3,8 +3,37 @@ const mysql = require('mysql2/promise');
 const inquirer = require('inquirer');
 const cTable = require('console.table');
 const { exit } = require('process');
+
+// Helper functions
 const getViewResults = require('./helpers/view');
-const getAddResults = require('./helpers/insert')
+const getAddResults = require('./helpers/insert');
+const getUpdateResults = require('./helpers/update');
+
+/**
+ * Displays the results from the queries.
+ * @param {PromiseConnection} db An instance of the database
+ * @param {Object} response The user's response
+ * @param {String} route Determines which route to take
+ * @returns {String} Sets menu key back to 'main'
+ */
+async function displayResults(db, response, route) {
+
+  if (route.startsWith('view')) {
+    response = route;
+    results = await getViewResults(db, response);
+  } 
+  else if (route.startsWith('add')) {    
+    results = await getAddResults(db, response);
+  } 
+  else if (route.startsWith('upd')) {    
+    results = await getUpdateResults(db, response);
+  }
+
+  console.clear();
+  console.table(results);
+
+  return 'main';
+}
 
 /**
  * Gets the question-based on the key provided.
@@ -112,12 +141,12 @@ function getQuestions(questionObj) {
     updEmpRole: [
       {
         type: 'list',
-        name: 'nameId',
+        name: 'empId',
         message: 'Whose role would you like to update?',
         choices: async function () {
           const results = await getViewResults(db, 'Employees');
 
-          return results.map((row) => ({ name: row.employee_name, value: row.id }));
+          return results.map((row) => ({ name: row.employee_name, value: row.employee_id }));
         }
       },
       {
@@ -134,48 +163,6 @@ function getQuestions(questionObj) {
   }
   
   return questions[key];
-}
-
-/**
- * Displays the update results based on the routing data provided.
- * @param {PromiseConnection} db An instance of the database
- * @param {String} route The route of the query
- * @param {Object} updData The data for the UPDATE
- */
-// async function getUpdateResults(db, route, updData) {
-//   let results;
-//   let updatedRow;
-
-//   if (route.endsWith('EmpRole')) {
-//     await updateEmployeeRole(db, updData);
-//     results = await viewAllEmployees(db);
-//     updatedRow = results.filter((row) => row.id === updData.nameId);
-//   } else {
-//     results = []
-//     updatedRow = results;
-//   }
-
-//   console.clear();
-//   console.table(updatedRow);
-// }
-
-/**
- * 
- * @param {PromiseConnection} db An instance of the database
- * @param {Object} empRoleData The data for employee role
- */
-async function updateEmployeeRole(db, empRoleData) {
-  const sql = `UPDATE employee
-                  SET role_id = ?
-                WHERE id = ?`;
-  const { roleId, nameId } = empRoleData;
-  const empRoleInfo = [roleId, nameId]
-
-  try {
-    await db.execute(sql, empRoleInfo);
-  } catch (err) {
-    console.error(err);
-  }
 }
 
 /**
@@ -208,32 +195,6 @@ function createQuestionObject(db) {
   questionObj.db = db;
 
   return questionObj;
-}
-
-/**
- * Displays the results from the queries.
- * @param {PromiseConnection} db An instance of the database
- * @param {Object} response The user's response
- * @param {String} route Determines which route to take
- * @returns {String} Sets menu key back to 'main'
- */
-async function displayResults(db, response, route) {
-
-  if (route.startsWith('view')) {
-    response = route;
-    results = await getViewResults(db, response);
-  } 
-  else if (route.startsWith('add')) {    
-    results = await getAddResults(db, response);
-  } 
-  else if (route.startsWith('upd')) {    
-    results = await getUpdateResults(db, menu.key, response);
-  }
-
-  console.clear();
-  console.table(results);
-
-  return 'main';
 }
 
 /**
