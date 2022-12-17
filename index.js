@@ -109,7 +109,7 @@ async function addEmployee(db, employeeData) {
  */
 async function displayUpdateResults(db, route, updData) {
 }
-// WHEN I choose to update an employee role
+
 /**
  * 
  * @param {PromiseConnection} db An instance of the database
@@ -117,9 +117,9 @@ async function displayUpdateResults(db, route, updData) {
  */
 async function updateEmployeeRole(db, empRoleData) {
 }
-// THEN I am prompted to select an employee to update and their new role and this information is updated in the database
+
 /**
- * Prompts questions.
+ * Prompts the questions.
  * @param {Object} questionObj 
  * @returns {String/Object} The answer/set of answers 
  */
@@ -128,9 +128,9 @@ async function promptQuestions(questionObj) {
 }
 
 /**
- * Creates an object that containing the question key and an instance of the database.
+ * Creates an object that will be used to get the questions for the prompt.
  * @param {PromiseConnection} db An instance of the database
- * @returns {Object} 
+ * @returns {Object} A question object containing a key and a database instance 
  */
 function createQuestionObject(db) {
   return;
