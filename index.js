@@ -106,6 +106,28 @@ function getQuestions(questionObj) {
           return results.length > 0 ? true : false;
         }
       }
+    ],
+    updEmpRole: [
+      {
+        type: 'list',
+        name: 'nameId',
+        message: 'Whose role would you like to update?',
+        choices: async function () {
+          const results = await viewAllEmployees(db);
+
+          return results.map((row) => ({ name: row.employee_name, value: row.id }));
+        }
+      },
+      {
+        type: 'list',
+        name: 'roleId',
+        message: 'What role would you like them to have?',
+        choices: async function () {
+          const results = await viewAllRoles(db);
+
+          return results.map((row) => ({ name: row.title, value: row.id }));
+        }
+      }
     ]
   }
   
@@ -348,6 +370,20 @@ async function addEmployee(db, employeeData) {
  * @param {Object} updData The data for the UPDATE
  */
 async function displayUpdateResults(db, route, updData) {
+  let results;
+  let updatedRow;
+
+  if (route.endsWith('EmpRole')) {
+    await updateEmployeeRole(db, updData);
+    results = await viewAllEmployees(db);
+    updatedRow = results.filter((row) => row.id === updData.nameId);
+  } else {
+    results = []
+    updatedRow = results;
+  }
+
+  console.clear();
+  console.table(updatedRow);
 }
 
 /**
@@ -356,6 +392,17 @@ async function displayUpdateResults(db, route, updData) {
  * @param {Object} empRoleData The data for employee role
  */
 async function updateEmployeeRole(db, empRoleData) {
+  const sql = `UPDATE employee
+                  SET role_id = ?
+                WHERE id = ?`;
+  const { roleId, nameId } = empRoleData;
+  const empRoleInfo = [roleId, nameId]
+
+  try {
+    await db.execute(sql, empRoleInfo);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /**
@@ -408,14 +455,24 @@ async function init() {
 
     if (response.startsWith('View')) {      
       await displayViewResults(db, response);
-    } else if (response.startsWith('add')) {
+    } 
+    else if (response.startsWith('add')) {
       menu.key = response;
       response = await promptQuestions(menu);
       
       await displayAddResults(db, menu.key, response);
 
       menu.key = 'main';
-    } else {
+    } 
+    else if (response.startsWith('upd')) {
+      menu.key = response;
+      response = await promptQuestions(menu);
+      
+      await displayUpdateResults(db, menu.key, response);
+
+      menu.key = 'main';
+    } 
+    else {
       console.log('Exiting...');
       menu.key = response;
     }
