@@ -37,6 +37,28 @@ function getQuestions(questionObj) {
         name: 'dept',
         message: 'Please enter the name.'
       }
+    ],
+    addRole: [
+      {
+        type: 'input',
+        name: 'title',
+        message: 'Please enter a title.'
+      },
+      {
+        type: 'input',
+        name: 'salary',
+        message: 'Please enter the role\'s salary.'
+      },
+      {
+        type: 'list',
+        name: 'dept',
+        message: 'Which department is it under?',
+        choices: async function () {
+          const results = await viewAllDepartments(db);
+
+          return results.map((row) => ({ name: row.name, value: row.id }));
+        }
+      }
     ]
   }
   
@@ -208,6 +230,15 @@ async function addDepartment(db, departmentData) {
  * @param {Object} roleData The data of the role
  */
 async function addRole(db, roleData) {
+  const sql = `INSERT INTO role (title, salary, department_id)
+                    VALUES (?, ?, ?)`;
+  const roleInfo = Object.values(roleData);
+
+  try {
+    await db.execute(sql, roleInfo);
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 /**
