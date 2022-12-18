@@ -198,6 +198,31 @@ function createQuestionObject(db) {
 }
 
 /**
+ * Displays the banner text for the applications.
+ */
+function setBannerText() {
+  console.log(`
+#
+#     ######                                                               
+#     #     # ###### #####    ##   #####  ##### #    # ###### #    # ##### 
+#     #     # #      #    #  #  #  #    #   #   ##  ## #      ##   #   #   
+#     #     # #####  #    # #    # #    #   #   # ## # #####  # #  #   #   
+#     #     # #      #####  ###### #####    #   #    # #      #  # #   #   
+#     #     # #      #      #    # #   #    #   #    # #      #   ##   #   
+#     ######  ###### #      #    # #    #   #   #    # ###### #    #   #   
+#
+#     ######                                                               
+#     #     # #    # # #      #####  ###### #####                          
+#     #     # #    # # #      #    # #      #    #                         
+#     ######  #    # # #      #    # #####  #    #                         
+#     #     # #    # # #      #    # #      #####                          
+#     #     # #    # # #      #    # #      #   #                          
+#     ######   ####  # ###### #####  ###### #    #                             
+#                                                              
+  `);
+}
+
+/**
  * The main function for the application.
  */
 async function init() {
@@ -208,6 +233,8 @@ async function init() {
                                            database: 'pokemon_league'});
   
   let menu = createQuestionObject(db);
+
+  setBannerText();
 
   while(menu.key !== 'Exit') {
     const startingKey = menu.key;
