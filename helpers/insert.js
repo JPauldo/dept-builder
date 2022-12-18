@@ -51,6 +51,7 @@ async function addEmployee(db, employeeData) {
     ({ firstName, lastName, roleId } = employeeData);
     managerId = null;
   }
+  
   const employeeInfo = [firstName, lastName, roleId, managerId];
 
   try {

@@ -1,48 +1,35 @@
 /**
- * Gets a list of managers by the department ID.
- * @param {PromiseConnection} db An instance of the database
- * @param {Integer} deptId An id of the managers' department
- * @returns {Array} A list of manager
+ * 
+ * @param {Array} results A list of data to be filtered
+ * @param {Array} filter A list of parameters to filter against
+ * @returns {Array} The filtered dataset
  */
-async function getManagersByDept(db, deptId) {
-  const sql = `SELECT E.id AS managers_id,
-                      CONCAT(E.first_name, " ", E.last_name) AS manager_name
-                 FROM employee E
-                 JOIN role R
-                   ON E.role_id = R.id
-                 JOIN department D
-                   ON R.department_id = D.id
-                WHERE D.id = ?
-                  AND E.manager_id IS NULL`;
+function filterResults(results, filter) {
+  const name = Object.keys(filter[0])[0];
+  const id = Object.values(filter[0])[0];
+  let filtered;
 
-  try {
-    const [rows, fields] = await db.execute(sql, [deptId]);
-
-    return rows;
-  } catch (err) {
-    console.error(err);
+  switch (name) {
+    case 'Manager':
+      filtered = results.filter((row) => row.manager_id === id);
+      break;
+    case 'Department':
+      filtered = results.filter((row) => row.department_id === id);
+      break;
+    case 'Role':
+      filtered = results.filter((row) => row.role_id === id);
+      break;
+    case 'Employee':
+      filtered = results.filter((row) => row.employee_id === id);
+      break;
   }
-}
-
-/**
- * Gets a list of roles by the department ID.
- * @param {PromiseConnection} db An instance of the database
- * @param {Integer} deptId An id of the managers' department
- * @returns {Array} A list of roles
- */
-async function getRolesByDept(db, deptInfo) {
-  const sql = `SELECT id AS role_id, 
-                      title AS role_name
-                 FROM role
-                WHERE department_id = ?`
-
-  try {
-    const [rows, fields] = await db.execute(sql, [deptInfo]);
-    
-    return rows;
-  } catch (err) {
-    console.error(err);
+  filter.shift();
+  
+  if (filter.length > 0) {
+    filtered = filterResults(filtered, filter);
   }
+  
+  return filtered;
 }
 
 /**
@@ -67,10 +54,12 @@ async function viewAllDepartments(db) {
 /**
  * Retrieves the data for all roles.
  * @param {PromiseConnection} db An instance of the database
+ * @param {Array} filterBy A list of parameters to filter against (Optional)
  * @returns {Array} A list of all roles
  */
-async function viewAllRoles(db) {
-  const sql = `SELECT R.id,
+async function viewAllRoles(db, filterBy=[]) {
+  const sql = `SELECT R.id AS role_id,
+                      D.id AS department_id,
                       title,
                       name AS department_name,
                       CONCAT('$', FORMAT(salary, 2)) AS salary
@@ -80,7 +69,15 @@ async function viewAllRoles(db) {
                 ORDER BY D.id, salary DESC`;
   
   try {
-    const [rows, fields] = await db.execute(sql);
+    let [rows, fields] = await db.execute(sql);
+
+    if (filterBy.length > 0) {
+      rows = filterResults(rows, filterBy);
+    }
+
+    rows.forEach(row => {
+      delete row.department_id;
+    });
     
     return rows;
   } catch (error) {
@@ -91,10 +88,14 @@ async function viewAllRoles(db) {
 /**
  * Retrieves the data for all employees.
  * @param {PromiseConnection} db An instance of the database
+ * @param {Array} filterBy A list of parameters to filter against (Optional)
  * @returns {Array} A list of all employees
  */
-async function viewAllEmployees(db) {
+async function viewAllEmployees(db, filterBy=[]) {
   const sql = `SELECT E.id AS employee_id,
+                      R.id AS role_id,
+                      D.id AS department_id,
+                      M.id AS manager_id,
                       CONCAT(E.first_name, " ", E.last_name) AS employee_name,
                       title AS role,
                       CONCAT('$', FORMAT(salary, 2)) AS income,
@@ -110,7 +111,17 @@ async function viewAllEmployees(db) {
                 ORDER BY D.id, income DESC, employee_id`;
 
   try {
-    const [rows, fields] = await db.execute(sql);
+    let [rows, fields] = await db.execute(sql);
+
+    if (filterBy.length > 0) {
+      rows = filterResults(rows, filterBy);
+    }
+
+    rows.forEach(row => {
+      delete row.role_id;
+      delete row.department_id;
+      delete row.manager_id;
+    });
     
     return rows;
   } catch (error) {
@@ -122,9 +133,10 @@ async function viewAllEmployees(db) {
  * Displays the view results based on the routing data provided.
  * @param {PromiseConnection} db An instance of the database
  * @param {String} route The route of the query
- * @param {Integer} filter A id to filter against
+ * @param {Array} filter A list of ids to filter against (Optional)
+ * @returns {Object} A list of results
  */
-async function getViewResults(db, route, filter=0) {
+async function getViewResults(db, route, filter=[]) {
   let results;
 
   switch (route) {
@@ -140,11 +152,15 @@ async function getViewResults(db, route, filter=0) {
     case 'viewEmp':
       results = await viewAllEmployees(db);
       break;
+    case 'EmployeeById':
+      results = await viewAllEmployees(db, filter);
+      break;
     case 'ManagersByDept':
-      results = await getManagersByDept(db, filter);
+      filter.unshift({ Manager: null });
+      results = await viewAllEmployees(db, filter);
       break;
     case 'RolesByDept':
-      results = await getRolesByDept(db, filter);
+      results = await viewAllRoles(db, filter);
       break;
   }
 

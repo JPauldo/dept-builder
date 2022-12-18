@@ -31,14 +31,14 @@ async function getUpdateResults(db, updData) {
   if (Object.hasOwn(updData, 'empId')) {
     await updateEmployeeRole(db, updData);
     
-    results = await getViewResults(db, 'Employees');
-    results = results.filter((row) => row.employee_id === updData.empId);
+    results = await getViewResults(db, 'EmployeeById', [{ Employee: updData.empId }]);
+    // results = results.filter((row) => row.employee_id === updData.empId);
   } 
   else {
     results = [];
   }
 
-  return results
+  return results;
 }
 
 module.exports = getUpdateResults;

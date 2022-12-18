@@ -29,7 +29,7 @@ async function displayResults(db, response, route) {
     results = await getUpdateResults(db, response);
   }
 
-  console.clear();
+  // console.clear();
   console.table(results);
 
   return 'main';
@@ -42,7 +42,7 @@ async function displayResults(db, response, route) {
  */
 function getQuestions(questionObj) {
   const db = questionObj.db;
-  const key = questionObj.key
+  const key = questionObj.key;
 
   const questions = {
     main: [
@@ -51,7 +51,7 @@ function getQuestions(questionObj) {
         name: 'main',
         message: 'What would you like do?',
         choices: [
-          { name:'View All Departments', value: 'viewDept' }, 
+          { name: 'View All Departments', value: 'viewDept' }, 
           { name: 'View All Roles', value: 'viewRole' }, 
           { name: 'View All Employees', value: 'viewEmp' }, 
           { name: 'Add a Department', value: 'addDept' }, 
@@ -100,12 +100,12 @@ function getQuestions(questionObj) {
       {
         type: 'input',
         name: 'lastName',
-        message: 'Please enter their first name.'
+        message: 'Please enter their last name.'
       },
       {
         type: 'list',
         name: 'deptId',
-        message: 'In which department?',
+        message: 'What region do they work in?',
         choices: async function () {
           const results = await getViewResults(db, 'Departments');
 
@@ -115,11 +115,11 @@ function getQuestions(questionObj) {
       {
         type: 'list',
         name: 'roleId',
-        message: 'What is their role?',
+        message: 'What is their trainer class?',
         choices: async function (answers) {
-          const results = await getViewResults(db, 'RolesByDept', answers.deptId);
+          const results = await getViewResults(db, 'RolesByDept', [{ Department: answers.deptId }]);
 
-          return results.map((row) => ({ name: row.role_name, value: row.role_id }));
+          return results.map((row) => ({ name: row.title, value: row.role_id }));
         }
       },
       {
@@ -127,12 +127,12 @@ function getQuestions(questionObj) {
         name: 'managerId',
         message: 'Who is their manager?',
         choices: async function (answers) {
-          const results = await getViewResults(db, 'ManagersByDept', answers.deptId);
+          const results = await getViewResults(db, 'ManagersByDept', [{ Department: answers.deptId }]);
 
-          return results.map((row) => ({ name: row.manager_name, value: row.managers_id }))
+          return results.map((row) => ({ name: row.employee_name, value: row.managers_id }))
         },
         when: async function (answers) {
-          const results = await getViewResults(db, 'ManagersByDept', answers.deptId);
+          const results = await getViewResults(db, 'ManagersByDept', [{ Department: answers.deptId }]);
 
           return results.length > 0 ? true : false;
         }
@@ -156,7 +156,7 @@ function getQuestions(questionObj) {
         choices: async function () {
           const results = await getViewResults(db, 'Roles');
 
-          return results.map((row) => ({ name: row.title, value: row.id }));
+          return results.map((row) => ({ name: row.title, value: row.role_id }));
         }
       }
     ]
@@ -222,8 +222,8 @@ async function init() {
     }
   }
 
-  console.log('Exiting...');
   // Exits the application
+  console.log('Exiting...');
   exit();
 }
 
