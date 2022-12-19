@@ -10,6 +10,31 @@ const getAddResults = require('./helpers/insert');
 const getUpdateResults = require('./helpers/update');
 
 /**
+ * Displays the banner text for the applications.
+ */
+function setBannerText() {
+  console.log(`
+#
+#     ######                                                               
+#     #     # ###### #####    ##   #####  ##### #    # ###### #    # ##### 
+#     #     # #      #    #  #  #  #    #   #   ##  ## #      ##   #   #   
+#     #     # #####  #    # #    # #    #   #   # ## # #####  # #  #   #   
+#     #     # #      #####  ###### #####    #   #    # #      #  # #   #   
+#     #     # #      #      #    # #   #    #   #    # #      #   ##   #   
+#     ######  ###### #      #    # #    #   #   #    # ###### #    #   #   
+#
+#     ######                                                               
+#     #     # #    # # #      #####  ###### #####                          
+#     #     # #    # # #      #    # #      #    #                         
+#     ######  #    # # #      #    # #####  #    #                         
+#     #     # #    # # #      #    # #      #####                          
+#     #     # #    # # #      #    # #      #   #                          
+#     ######   ####  # ###### #####  ###### #    #                             
+#                                                              
+  `);
+}
+
+/**
  * Displays the results from the queries.
  * @param {PromiseConnection} db An instance of the database
  * @param {Object} response The user's response
@@ -29,7 +54,7 @@ async function displayResults(db, response, route) {
     results = await getUpdateResults(db, response);
   }
 
-  // console.clear();
+  console.clear();
   console.table(results);
 
   return 'main';
@@ -129,7 +154,7 @@ function getQuestions(questionObj) {
         choices: async function (answers) {
           const results = await getViewResults(db, 'ManagersByDept', [{ Department: answers.deptId }]);
 
-          return results.map((row) => ({ name: row.employee_name, value: row.managers_id }))
+          return results.map((row) => ({ name: row.employee_name, value: row.employee_id }))
         },
         when: async function (answers) {
           const results = await getViewResults(db, 'ManagersByDept', [{ Department: answers.deptId }]);
@@ -195,31 +220,6 @@ function createQuestionObject(db) {
   questionObj.db = db;
 
   return questionObj;
-}
-
-/**
- * Displays the banner text for the applications.
- */
-function setBannerText() {
-  console.log(`
-#
-#     ######                                                               
-#     #     # ###### #####    ##   #####  ##### #    # ###### #    # ##### 
-#     #     # #      #    #  #  #  #    #   #   ##  ## #      ##   #   #   
-#     #     # #####  #    # #    # #    #   #   # ## # #####  # #  #   #   
-#     #     # #      #####  ###### #####    #   #    # #      #  # #   #   
-#     #     # #      #      #    # #   #    #   #    # #      #   ##   #   
-#     ######  ###### #      #    # #    #   #   #    # ###### #    #   #   
-#
-#     ######                                                               
-#     #     # #    # # #      #####  ###### #####                          
-#     #     # #    # # #      #    # #      #    #                         
-#     ######  #    # # #      #    # #####  #    #                         
-#     #     # #    # # #      #    # #      #####                          
-#     #     # #    # # #      #    # #      #   #                          
-#     ######   ####  # ###### #####  ###### #    #                             
-#                                                              
-  `);
 }
 
 /**

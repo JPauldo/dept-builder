@@ -32,7 +32,6 @@ async function getUpdateResults(db, updData) {
     await updateEmployeeRole(db, updData);
     
     results = await getViewResults(db, 'EmployeeById', [{ Employee: updData.empId }]);
-    // results = results.filter((row) => row.employee_id === updData.empId);
   } 
   else {
     results = [];

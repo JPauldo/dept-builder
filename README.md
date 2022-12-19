@@ -27,7 +27,7 @@ It is quite intuitive. Why not just give it a try?
 
 Below is a demonstration of the application: 
 
-![Alt Text for Placeholder](https://via.placeholder.com/150)
+[![Video for Department Builder](./assets/images/dept-builder-screenshot.PNG)](https://drive.google.com/file/d/1_qxKY9fgQd30k9aX4H6rBNcr3-K_IsOO/view?usp=share_link)
 
 ## License
 
